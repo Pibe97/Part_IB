@@ -1,0 +1,58 @@
+function [  ] = Plot_yp()
+%Plot_yp plots y_p for values of p from 0.1 to 60.
+    
+    function [ x, y, z ] = SecondOrder_RK4( h,N,p,a )
+    %SecondOrder_RK4 takes as input the step size h, the number of steps N to
+    %be done and the parameters p and a (=alpha) from the differential 
+    %equation
+
+    f1=@(x,y,z) z;
+    f2=@(x,y,z) -p^2*(1+x)^(-a)*y;
+
+    x=0:N; %these will be the output
+    y=0:N;
+    z=0:N;
+
+    x(1)=0; %initial conditions
+    y(1)=0;
+    z(1)=1;
+
+    i=2;
+    while i<=N+1
+        p1=h*f1(x(i-1), y(i-1), z(i-1)); %the k_i are now 2D vectors, k=[p q]
+        q1=h*f2(x(i-1), y(i-1), z(i-1));
+        p2=h*f1(x(i-1)+0.5*h, y(i-1)+0.5*p1, z(i-1)+0.5*q1);
+        q2=h*f2(x(i-1)+0.5*h, y(i-1)+0.5*p1, z(i-1)+0.5*q1);
+        p3=h*f1(x(i-1)+0.5*h, y(i-1)+0.5*p2, z(i-1)+0.5*q2);
+        q3=h*f2(x(i-1)+0.5*h, y(i-1)+0.5*p2, z(i-1)+0.5*q2);
+        p4=h*f1(x(i-1)+h, y(i-1)+p3, z(i-1)+q3);
+        q4=h*f2(x(i-1)+h, y(i-1)+p3, z(i-1)+q3);
+    
+        y(i)=y(i-1)+(1/6)*(p1+2*p2+2*p3+p4);
+        z(i)=z(i-1)+(1/6)*(q1+2*q2+2*q3+q4);
+        x(i)=x(i-1)+h;
+    
+        disp([' ']); %detailed step by step output
+        disp(['x_' num2str(i-1) ' = ' num2str(x(i))]);
+        disp(['y_' num2str(i-1) ' = ' num2str(y(i))]);
+        disp(['z_' num2str(i-1) ' = ' num2str(z(i))]);
+        i=i+1;
+    end
+    end
+
+p=0.1 %initial value for p, will use step size 0.1
+y1=0:1:599; %initialise y_p(1)
+while p<=60
+    [x,y,z]=SecondOrder_RK4(0.01,100,p,8);
+    y1(round(p*10))=y(101); %the rounding is only to avoid issues
+    p=p+0.1; %next step
+end
+P=0.1:0.1:60;
+plot(P,y1)
+axis([0 60 -1 1])
+grid on
+xlabel('p');
+ylabel('y_p(1)');
+title('Plot of y_p(1), showing eigenvalues');
+end
+
